@@ -1,0 +1,7 @@
+.vscode/
+screenshot.png
+*.log
+log/
+
+# JetBrains IDEs
+.idea/
