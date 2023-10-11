@@ -1,0 +1,116 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 200px;
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  font-family: sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+
+#boundingBox {
+  position: absolute;
+  border: 2px solid red;
+  pointer-events: none;
+  /* Prevent the box from blocking mouse events on the image */
+}
+
+.annotation_bounding_box {
+  display: table;
+  width: 100%;
+  background-color: aliceblue;
+}
+
+#annotation_editor {
+  display: table-cell;
+  width: 10rem;
+}
+
+#display_area {
+  display: table-cell;
+  /* width: 100%; */
+  z-index: 1;
+  margin: 0;
+  padding-left: 4em;
+  vertical-align: top;
+}
+
+/* Label selection panel inside leftsidebar */
+ul.list_label {
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  overflow: hidden;
+  padding: 0.4em 0;
+  margin: 0;
+}
+
+ul.list_label li {
+  padding: 0 0.2em;
+  fill: #ffffff;
+  stroke: #000000;
+}
+
+ul.list_label .selected {
+  fill: #ffffff;
+  stroke: #ff0000;
+}
+
+ul.list_label li.list_label_item {
+  margin: 5px 0;
+  padding: 2px 4px;
+  border: 1px solid #ff0000;
+  text-align: center;
+  cursor: pointer;
+}
+/* layers of canvas */
+#image_panel {
+  position: relative;
+  outline: none;
+}
+
+#image_panel img {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  /* height: 100%; */
+  outline: none;
+}
+
+#image_panel .visible {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+#boundingBox,
+#image_panel canvas {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  outline: none;
+}
+
+#image_panel label > img {
+  visibility: visible;
+  opacity: 1;
+  position: relative;
+  width: auto;
+  height: 4em;
+  outline: none;
+}
+
+.display_none {
+  display: none !important;
+}
+.display_block {
+  display: block !important;
+}
