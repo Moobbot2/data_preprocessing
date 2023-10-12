@@ -65,8 +65,8 @@ ul.list_label .selected {
 ul.list_label li.list_label_item {
   margin: 5px 0;
   padding: 2px 4px;
-  border: 1px solid #ff0000;
-  text-align: center;
+  /* border: 1px solid #ff0000;
+  text-align: center; */
   cursor: pointer;
 }
 /* layers of canvas */

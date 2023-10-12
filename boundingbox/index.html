@@ -10,12 +10,24 @@
 
 <body onload="_bounding_box_init()">
     <div class="annotation_bounding_box">
+
         <div id="annotation_editor">
+            <input type="file" id="imageInput" accept="image/*">
             <ul class="list_label">
-                <li class="list_label_item">
-                    <input type="file" id="imageInput" accept="image/*">
+                <li class="list_label_item" data-key="tieude" data-title="Tiêu đề minh chứng">
+                    <button>Tiêu đề minh chứng</button>
+                </li>
+                <li class="list_label_item" data-key="ngay" data-title="Ngày ban hành">
+                    <button>Ngày ban hành</button>
+                </li>
+                <li class="list_label_item" data-key="noigui" data-title="Nơi ban hành">
+                    <button>Nơi ban hành</button>
+                </li>
+                <li class="list_label_item" data-key="soqd" data-title="Số quyết định">
+                    <button>Số quyết định</button>
                 </li>
             </ul>
+            <div id="view_box"></div>
         </div>
         <div id="display_area">
             <h1>Bounding Box with Canvas - 2D Bounding Box Annotation</h1>
@@ -23,41 +35,38 @@
 
             <div id="image_panel" class="display_area_content">
                 <canvas id="region_canvas" width="1" height="1" tabindex="1">Sorry, your browser does not support HTML5
-                    Canvas functionality which is required for this application.</canvas>
+                    Canvas functionality, which is required for this application.</canvas>
                 <img id="selectedImage" src="" alt="Selected Image" class="display_none">
             </div>
         </div>
     </div>
 
-
     <script>
-        //settings
-        var window_width = screen.width;
-
-        var _canvas_scale = 1.0;// current scale of canvas image
-        var _canvas_width, _canvas_height;
-
-        //image
-        var image_input = document.getElementById('imageInput');
-        var _current_image = document.getElementById('selectedImage');
-        var _current_image_width;
-        var _current_image_height;
+        //Settings
+        var _canvas_scale = 1.0;// Current scale of canvas image
         var _canvas_regions_start_x, _canvas_regions_start_y, _canvas_regions_end_x, _canvas_regions_end_y;
 
+        //Image
+        var image_input = document.getElementById('imageInput');
+        var _current_image = document.getElementById('selectedImage');
         var _annotation_editor = document.getElementById('annotation_editor');
         var _display_area = document.getElementById('display_area');
         var image_panel = document.getElementById('image_panel');
         var _reg_canvas = document.getElementById('region_canvas');
         var _reg_ctx;// initialized in _bounding_box_init()
 
-
         var coordinates = document.getElementById('coordinates');
+        var view_box = document.getElementById('view_box');
         var isDrawing = false;
         var startPoint = { x: 0, y: 0 };
         var endPoint = { x: 0, y: 0 };
 
+        // Create an object to store the data
+        var data_return = {};
+
         function _bounding_box_init() {
             _init_reg_canvas_context();
+            addEventListeners();
         }
 
         function _init_reg_canvas_context() {
@@ -67,16 +76,32 @@
         function set_all_canvas_size(w, h) {
             _reg_canvas.height = h;
             _reg_canvas.width = w;
-
             image_panel.style.width = w + 'px';
             image_panel.style.height = h + 'px';
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        function clearBoundingBox() {
+            _reg_ctx.clearRect(0, 0, _reg_canvas.width, _reg_canvas.height);
+            _reg_ctx.drawImage(_current_image, 0, 0, region_canvas.width, region_canvas.height);
+        }
+
+        function drawBoundingBox() {
+            _reg_ctx.strokeStyle = 'red';
+            _reg_ctx.strokeRect(startPoint.x, startPoint.y, endPoint.x - startPoint.x, endPoint.y - startPoint.y);
+        }
+
+        function updateCoordinates() {
+            _canvas_regions_start_x = Math.round(startPoint.x / _canvas_scale);
+            _canvas_regions_start_y = Math.round(startPoint.y / _canvas_scale);
+            _canvas_regions_end_x = Math.round(endPoint.x / _canvas_scale);
+            _canvas_regions_end_y = Math.round(endPoint.y / _canvas_scale);
+            coordinates.textContent = `Start X: ${_canvas_regions_start_x}, Start Y: ${_canvas_regions_start_y}, End X: ${_canvas_regions_start_y}, End Y: ${_canvas_regions_end_y}`;
+        }
+
+        function addEventListeners() {
             image_input.addEventListener('change', function (e) {
                 e.preventDefault();
                 const file = image_input.files[0];
-
                 if (file) {
                     const reader = new FileReader();
 
@@ -89,58 +114,72 @@
             });
 
             _current_image.addEventListener('load', function () {
-                let _current_image_width = _current_image.naturalWidth;
-                let _current_image_height = _current_image.naturalHeight;
 
                 let canvas_w = image_panel.clientWidth - 20;
-                _canvas_scale = canvas_w / _current_image_width
-                let canvas_h = _current_image_height * _canvas_scale;
+                _canvas_scale = canvas_w / _current_image.naturalWidth;
+                let canvas_h = _current_image.naturalHeight * _canvas_scale;
                 set_all_canvas_size(canvas_w, canvas_h);
                 _reg_ctx.drawImage(_current_image, 0, 0, _reg_canvas.width, _reg_canvas.height);
             });
 
+            // Event listener for mouse down
             _reg_canvas.addEventListener('mousedown', (e) => {
                 isDrawing = true;
-                const rect = region_canvas.getBoundingClientRect();
-                startPoint = {
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top
-                };
+                const rect = _reg_canvas.getBoundingClientRect();
+                startPoint.x = e.clientX - rect.left;
+                startPoint.y = e.clientY - rect.top;
             });
 
+            // Event listener for mouse move
             _reg_canvas.addEventListener('mousemove', (e) => {
                 if (!isDrawing) return;
-                const rect = region_canvas.getBoundingClientRect();
-                endPoint = {
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top
-                };
-                const width = endPoint.x - startPoint.x;
-                const height = endPoint.y - startPoint.y;
+                const rect = _reg_canvas.getBoundingClientRect();
+                endPoint.x = e.clientX - rect.left;
+                endPoint.y = e.clientY - rect.top;
 
-                _reg_ctx.clearRect(0, 0, region_canvas.width, region_canvas.height);
-                _reg_ctx.drawImage(_current_image, 0, 0, region_canvas.width, region_canvas.height);
-                _reg_ctx.strokeStyle = 'red';
-                _reg_ctx.strokeRect(startPoint.x, startPoint.y, endPoint.x - startPoint.x, endPoint.y - startPoint.y);
-                _canvas_regions_start_x = Math.round(startPoint.x / _canvas_scale);
-                _canvas_regions_start_y = Math.round(startPoint.y / _canvas_scale);
-                _canvas_regions_end_x = Math.round(endPoint.x / _canvas_scale);
-                _canvas_regions_end_y = Math.round(endPoint.y / _canvas_scale);
-                coordinates.textContent = `startPoint.X: ${_canvas_regions_start_x}, startPoint.Y: ${_canvas_regions_start_y}, endPoint.X: ${_canvas_regions_end_x}, endPoint.Y: ${_canvas_regions_end_y}`;
+                clearBoundingBox();
+                drawBoundingBox();
+                updateCoordinates();
+            });
+            var currentLabelType = null;
+
+            var listItems = document.querySelectorAll('.list_label_item');
+            listItems.forEach(function (listItem) {
+                listItem.addEventListener('click', function () {
+                    currentLabelType = listItem.getAttribute('data-key');
+                });
             });
 
             _reg_canvas.addEventListener('mouseup', () => {
-                var data_return = {
-                    'image': _current_image.src,
-                    'startPoint_x': _canvas_regions_start_x,
-                    'startPoint_y': _canvas_regions_start_y,
-                    'endPoint_x': _canvas_regions_end_x,
-                    'endPoint_y': _canvas_regions_end_y,
-                };
-                console.log(data_return);
+
+                // data_return['image'] = _current_image.src;
+                // Check if the currentLabelType is set
+                if (currentLabelType) {
+                    // Create a new object for the current label type
+                    var labelData = {
+                        'startPoint_x': _canvas_regions_start_x,
+                        'startPoint_y': _canvas_regions_start_y,
+                        'endPoint_x': _canvas_regions_end_x,
+                        'endPoint_y': _canvas_regions_end_y,
+                    };
+
+                    // Check if the label already exists in data_return
+                    if (data_return[currentLabelType]) {
+                        // Append the new data to the existing label
+                        Object.assign(data_return[currentLabelType], labelData);
+                    } else {
+                        // Create a new label in data_return
+                        data_return[currentLabelType] = labelData;
+                    }
+
+                    // Reset the currentLabelType
+                    currentLabelType = null;
+                }
+                // Convert the data_return object to a JSON string and display it
+                view_box.innerHTML = JSON.stringify(data_return);
                 isDrawing = false;
             });
-        });
+        };
     </script>
 </body>
 
