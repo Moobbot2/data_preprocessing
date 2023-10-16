@@ -95,7 +95,7 @@
             _canvas_regions_start_y = Math.round(startPoint.y / _canvas_scale);
             _canvas_regions_end_x = Math.round(endPoint.x / _canvas_scale);
             _canvas_regions_end_y = Math.round(endPoint.y / _canvas_scale);
-            coordinates.textContent = `Start X: ${_canvas_regions_start_x}, Start Y: ${_canvas_regions_start_y}, End X: ${_canvas_regions_start_y}, End Y: ${_canvas_regions_end_y}`;
+            coordinates.textContent = `Start X: ${_canvas_regions_start_x}, Start Y: ${_canvas_regions_start_y}, End X: ${_canvas_regions_end_x}, End Y: ${_canvas_regions_end_y}`;
         }
 
         function addEventListeners() {
@@ -115,9 +115,13 @@
 
             _current_image.addEventListener('load', function () {
 
+                let _current_image_width = _current_image.naturalWidth;
+                let _current_image_height = _current_image.naturalHeight;
+                console.log(_current_image_width);
+                console.log(_current_image_height);
                 let canvas_w = image_panel.clientWidth - 20;
-                _canvas_scale = canvas_w / _current_image.naturalWidth;
-                let canvas_h = _current_image.naturalHeight * _canvas_scale;
+                _canvas_scale = canvas_w / _current_image_width;
+                let canvas_h = _current_image_height * _canvas_scale;
                 set_all_canvas_size(canvas_w, canvas_h);
                 _reg_ctx.drawImage(_current_image, 0, 0, _reg_canvas.width, _reg_canvas.height);
             });
@@ -126,16 +130,20 @@
             _reg_canvas.addEventListener('mousedown', (e) => {
                 isDrawing = true;
                 const rect = _reg_canvas.getBoundingClientRect();
-                startPoint.x = e.clientX - rect.left;
-                startPoint.y = e.clientY - rect.top;
+                startPoint = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
             });
 
             // Event listener for mouse move
             _reg_canvas.addEventListener('mousemove', (e) => {
                 if (!isDrawing) return;
                 const rect = _reg_canvas.getBoundingClientRect();
-                endPoint.x = e.clientX - rect.left;
-                endPoint.y = e.clientY - rect.top;
+                endPoint = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
 
                 clearBoundingBox();
                 drawBoundingBox();
