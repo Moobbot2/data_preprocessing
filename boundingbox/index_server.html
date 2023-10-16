@@ -158,49 +158,31 @@
 
             _reg_canvas.addEventListener('mouseup', () => {
 
+                // data_return['image'] = _current_image.src;
+                // Check if the currentLabelType is set
                 if (currentLabelType) {
-                    // Calculate the width and height of the bounding box
-                    var width = _canvas_regions_end_x - _canvas_regions_start_x;
-                    var height = _canvas_regions_end_y - _canvas_regions_start_y;
-
-                    // Create a temporary canvas to hold the cropped image
-                    var tempCanvas = document.createElement('canvas');
-                    var tempCtx = tempCanvas.getContext('2d');
-
-                    // Set the canvas size to the size of the bounding box
-                    tempCanvas.width = width;
-                    tempCanvas.height = height;
-
-                    // Crop the image
-                    tempCtx.drawImage(_current_image,
-                        _canvas_regions_start_x, _canvas_regions_start_y, width, height,
-                        0, 0, width, height);
-
-                    // Get the cropped image as a base64 data URL
-                    var croppedImageBase64 = tempCanvas.toDataURL();
+                    // Create a new object for the current label type
+                    var labelData = {
+                        'startPoint_x': _canvas_regions_start_x,
+                        'startPoint_y': _canvas_regions_start_y,
+                        'endPoint_x': _canvas_regions_end_x,
+                        'endPoint_y': _canvas_regions_end_y,
+                    };
 
                     // Check if the label already exists in data_return
                     if (data_return[currentLabelType]) {
                         // Append the new data to the existing label
-                        Object.assign(data_return[currentLabelType], croppedImageBase64);
+                        Object.assign(data_return[currentLabelType], labelData);
                     } else {
                         // Create a new label in data_return
-                        data_return[currentLabelType] = croppedImageBase64;
+                        data_return[currentLabelType] = labelData;
                     }
-
-                    // Do something with the cropped image, for example, display it or send it to the server
-                    console.log("currentLabelType", currentLabelType);
-                    console.log("Cropped Image Base64:", data_return[currentLabelType]);
-
-                    // Clear the bounding box
-                    clearBoundingBox();
 
                     // Reset the currentLabelType
                     currentLabelType = null;
                 }
-
-                // Update the coordinates display
-                coordinates.textContent = '';
+                // Convert the data_return object to a JSON string and display it
+                view_box.innerHTML = JSON.stringify(data_return);
                 isDrawing = false;
             });
         };
