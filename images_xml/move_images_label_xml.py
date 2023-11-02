@@ -15,10 +15,10 @@ def check_path(path_to_check, type_path=None):
 
         This function checks if the specified 'path_to_check' exists. If it exists, it can optionally
         check if the path is of a specific type (file or directory) based on the 'type_path' parameter.
-        
+
         If 'type_path' is 'dir', it checks if the path is a directory.
         If 'type_path' is 'file', it checks if the path is a file.
-        
+
         If the path does not exist or does not match the specified type, appropriate error messages
         are printed, and the function returns False. If the path exists and, if specified, is of the
         correct type, the function returns True.
@@ -61,16 +61,21 @@ def move_images_label_xml(directory_annotations_path, directory_img_path, destin
         Any non-XML files in 'directory_annotations_path' are skipped.
     """
     if not (os.path.isdir(directory_annotations_path) and
-            os.path.isdir(directory_img_path) and
-            os.path.isdir(destination_path)):
+            os.path.isdir(directory_img_path)):
+        print(directory_annotations_path,
+              os.path.isdir(directory_annotations_path))
+        print(directory_img_path, os.path.isdir(directory_img_path))
         return False  # One or more paths are not valid directories
+    if not os.path.isdir(destination_path):
+        os.makedirs(destination_path)
+
     for filename in os.listdir(directory_annotations_path):
         if not filename.endswith('.xml'):
             continue  # Skip non-XML files
-        
+
         # Extract the base filename (without the extension)
         base_filename = os.path.splitext(filename)[0]
-        
+
         # Construct the full paths for the XML file and the image file
         xml_filepath = os.path.join(directory_annotations_path, filename)
         image_filepath = ''
@@ -80,17 +85,16 @@ def move_images_label_xml(directory_annotations_path, directory_img_path, destin
             if img_filename.startswith(base_filename):
                 image_filepath = os.path.join(directory_img_path, img_filename)
                 break
-        
+    
         # Check if the image file exists
         if not os.path.isfile(image_filepath):
             print(f"Image file not found for {xml_filepath}. Skipping...")
             # shutil.move(xml_filepath, destination_path) #label_not_image
             continue
-        
+
         # Move the image file to the destination folder
         # shutil.move(image_filepath, destination_path)
-
-        # print(f"Image file has been moved from {image_filepath} to {destination_path}")
+        print(f"Image file has been moved from {image_filepath} to {destination_path}")
 
 # Example usage:
 directory_annotations_path = r'foder label image xml'
